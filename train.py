@@ -78,7 +78,7 @@ def train(config_path, train_hospital: int, data_dir):
     transform = config.get_transforms()
     dataloader = get_dataloader(data_dir, train_hospital, 'train', 64, transform, True, config.config)
     val_dataloader = get_dataloader(data_dir, train_hospital, 'val', 128, config=config.config)
-
+    breakpoint()
     optimizer, scheduler = config.get_optimizer_and_scheduler(model)
 
     best_loss = 1e6
@@ -237,7 +237,6 @@ def evaluate_model(model, dataloader, compute_dist_loss=False):
                 mask_embeddings = features['layer4'].flatten(start_dim=1)
                 distances_l4 = distance_fn(x_embeddings, mask_embeddings)
                 distances.append(distances_l4)
-
         acc = np.sum(np.diag(confusion_mat) / np.sum(confusion_mat))
 
         print('Accuracy(mean): %f %%' % (100 * acc))

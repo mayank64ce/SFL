@@ -54,10 +54,11 @@ class Camelyon17DatasetWithMasks(Dataset):
         return x, y, metadata
 
     def _read_and_initialise_metadata(self):
-        df = pd.read_csv(self.root_dir / 'metadata.csv', index_col=0, dtype={'patient': 'str'})
+        # df = pd.read_csv(self.root_dir / 'metadata.csv', index_col=0, dtype={'patient': 'str'})
+        df = pd.read_csv(self.root_dir / 'metadata_subset.csv', index_col=0, dtype={'patient': 'str'})
         self.df = df[(df['center'] == self.hospital) & (df['split'].isin(self.split))]
-        self.df.reset_index(drop=True, inplace=True)
-
+        self.df.reset_index(drop=True, inplace=True) # this step is somehow removing the patient
+        
         self.metadata_array = torch.stack(
             (torch.LongTensor(self.df['center'].values.astype('long')),
              torch.LongTensor(self.df['slide'].values)), dim=1

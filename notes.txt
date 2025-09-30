@@ -1,0 +1,11 @@
+What have I found ?
+
+I will pick 2 patients from each hospital. One will be training patient, the other will be validation patient.
+
+I just need to decide which patient to keep from which hospital:
+
+1. hospital 0: 009, 010
+2. hospital 1: 
+3. hospital 2: 
+4. hospital 3: 
+5. hospital 4: 
