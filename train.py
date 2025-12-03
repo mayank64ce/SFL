@@ -15,6 +15,8 @@ from torchvision.models import resnet50, ResNet50_Weights
 
 from datasets.camelyon17 import Camelyon17DatasetWithMasks
 
+torch.manual_seed(0)
+
 cuda_device = torch.device('cuda', 0)
 features = {}
 
@@ -69,16 +71,15 @@ def train(config_path, train_hospital: int, data_dir):
     # Set up the model and transfer it to GPU
     model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
     model.fc = torch.nn.Linear(model.fc.in_features, 1)
-    torch.nn.init.constant_(model.fc.weight, 1e-4)
-    torch.nn.init.constant_(model.fc.bias, 0)
+    # torch.nn.init.constant_(model.fc.weight, 1e-4)
+    # torch.nn.init.constant_(model.fc.bias, 0)
     model.layer4.register_forward_hook(get_features('layer4'))
     model.to(cuda_device)
     
     # Set up the dataloaders
     transform = config.get_transforms()
-    dataloader = get_dataloader(data_dir, train_hospital, 'train', 64, transform, True, config.config)
+    dataloader = get_dataloader(data_dir, train_hospital, 'train', 64, transform, True, config.config, num_workers=0)
     val_dataloader = get_dataloader(data_dir, train_hospital, 'val', 128, config=config.config)
-    breakpoint()
     optimizer, scheduler = config.get_optimizer_and_scheduler(model)
 
     best_loss = 1e6
@@ -86,7 +87,7 @@ def train(config_path, train_hospital: int, data_dir):
     best_accuracy = 0
 
     compute_dist_loss = config.config['DISTANCE_START_EPOCH'] < config.config['TOTAL_EPOCHS']
-    save_model_from_epoch = config.config['DISTANCE_START_EPOCH'] + 5
+    save_model_from_epoch = config.config['DISTANCE_START_EPOCH'] + 2
     model_path = Path('ckpts') / 'resnet50' / f'{train_hospital}.pth'
 
     for epoch in range(config.config['TOTAL_EPOCHS']):

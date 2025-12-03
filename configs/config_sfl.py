@@ -17,7 +17,7 @@ def get_transforms():
 
 
 config = {
-    'TOTAL_EPOCHS': 50,
+    'TOTAL_EPOCHS': 20,
     'DISTANCE_WEIGHT': 1,  # The parameter lambda in the paper
     'DISTANCE_START_EPOCH': 5,  # Should be set to an epoch when model starts predicting normally again
 }

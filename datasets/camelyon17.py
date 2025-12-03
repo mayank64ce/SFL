@@ -7,12 +7,12 @@ import pandas as pd
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision.transforms.functional import to_tensor, hflip, vflip, affine
+from torchvision.transforms.functional import to_tensor, hflip, vflip, affine, resize
 
 
 class Camelyon17DatasetWithMasks(Dataset):
     def __init__(self, root_dir, hospital: int, split, transform=None, get_mask=False,
-                 geometric_aug=True, affine_aug=False):
+                 geometric_aug=True, affine_aug=False, use_vit=False):
         super(Camelyon17DatasetWithMasks, self).__init__()
         self.root_dir = Path(root_dir)
         self.hospital = hospital
@@ -43,6 +43,9 @@ class Camelyon17DatasetWithMasks(Dataset):
         self.multiply_mask_with_x_prob = 0.5
         self.geometric_aug = geometric_aug
         self.affine_aug = affine_aug
+
+        # new parameter here
+        self.use_vit = use_vit
 
     def __len__(self):
         return len(self._input_array)
@@ -78,10 +81,10 @@ class Camelyon17DatasetWithMasks(Dataset):
     def get_input(self, idx):
         """Returns x, mask_x for a given index(idx)."""
         x = self._read_image(self.images_dir, idx)
-        x = self._transform_image(x, self.transform)
+        x = self._transform_image(x, self.transform, use_vit=self.use_vit)
         if self.get_mask:
             mask_x = self._read_image(self.masks_dir, idx)
-            mask_x = self._transform_image(mask_x, None)
+            mask_x = self._transform_image(mask_x, None, use_vit=self.use_vit)
             # Data Augmentation: Either use binary mask times input instead
             if torch.rand(1) < self.multiply_mask_with_x_prob:
                 x = mask_x * x
@@ -130,7 +133,10 @@ class Camelyon17DatasetWithMasks(Dataset):
         return img
 
     @staticmethod
-    def _transform_image(image, transform):
+    def _transform_image(image, transform, use_vit=False):
         if transform is not None:
             return transform(image)
-        return to_tensor(image)
+        image = to_tensor(image)
+        if use_vit:
+            image = resize(image, (224, 224))
+        return image
